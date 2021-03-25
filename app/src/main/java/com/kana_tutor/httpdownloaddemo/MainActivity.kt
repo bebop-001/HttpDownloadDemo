@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var destinationFilename:AutoCompleteTextView
     private lateinit var startDownload:Button
     private lateinit var downloadProgress:ProgressBar
-    private lateinit var createDirs: CheckedTextView
+    private lateinit var overwriteCurrentFile: CheckedTextView
 
     private fun hideKeyboard() {
         val im = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
@@ -45,16 +45,15 @@ class MainActivity : AppCompatActivity() {
         destinationFilename = findViewById(R.id.destination_AC)
         startDownload = findViewById(R.id.start_download_BTN)
         downloadProgress = findViewById(R.id.download_PB)
-        createDirs = findViewById(R.id.create_directories_CK)
+        overwriteCurrentFile = findViewById(R.id.overwrite_file_CK)
 
         fun enableDownloadButton() {
             startDownload.isEnabled =
                 downloadUrl.text.isNotEmpty() && destinationFilename.text.isNotEmpty()
         }
-        createDirs.setOnClickListener{
+        overwriteCurrentFile.setOnClickListener{
             val cb = it as CheckedTextView
             cb.isChecked = !cb.isChecked
-            Log.d(TAG, "createDirs:${cb.isChecked}")
         }
 
         enableDownloadButton()
@@ -79,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                         copyFileResult = application.copyUrlToLocalFile(
                             sourceUrl, destFile,
                             calcMD5 = md5Checksum.text.isNotEmpty(),
-                            force = createDirs.isChecked,
+                            force = overwriteCurrentFile.isChecked,
                         )
                     }
                     // show a result dialog.

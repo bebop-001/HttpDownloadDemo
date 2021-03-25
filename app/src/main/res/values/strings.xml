@@ -3,7 +3,8 @@
 
     <string name="start_download">Start Download</string>
     <string name="download_url">Download URL</string>
-    <string name="create_directories">Create directories if needed</string>
+    <string name="download_filename">Download file name</string>
+    <string name="overwrite_file">Overwrite current file if it exists.</string>
     <string name="download_file_md5_checksum">MD5 checksum for file</string>
 
 </resources>

@@ -48,7 +48,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:completionThreshold="0"
-        android:hint="@string/download_url"
+        android:hint="@string/download_filename"
         android:layout_margin="5dp"
         android:singleLine="true"
         app:layout_constraintTop_toBottomOf="@id/md5_ET"
@@ -56,10 +56,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="Autofill,TextFields" />
     <CheckedTextView
-        android:id="@+id/create_directories_CK"
+        android:id="@+id/overwrite_file_CK"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/create_directories"
+        android:text="@string/overwrite_file"
         android:drawableStart="?android:attr/listChoiceIndicatorMultiple"
         android:checked="true"
         app:layout_constraintTop_toBottomOf="@id/destination_AC"
@@ -73,7 +73,7 @@
         android:layout_margin="5dp"
         android:text="@string/start_download"
         android:enabled="false"
-        app:layout_constraintTop_toBottomOf="@id/create_directories_CK"
+        app:layout_constraintTop_toBottomOf="@id/overwrite_file_CK"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         />
