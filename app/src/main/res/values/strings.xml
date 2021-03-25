@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">HttpDownloadDemo</string>
+
+    <string name="start_download">Start Download</string>
+    <string name="download_url">Download URL</string>
+    <string name="create_directories">Create directories if needed</string>
+    <string name="download_file_md5_checksum">MD5 checksum for file</string>
+
+</resources>
