@@ -17,16 +17,17 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.kana_tutor.httpdownloaddemo.HOME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.zip.GZIPInputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 private const val TAG = "FileUtils"
 const val BUFFER_SIZE = 0x1000
@@ -151,3 +152,93 @@ fun Application.copyFromAssetsToLocalFile(
     source.close()
     return true to "wrote $destSize bytes."
 }
+
+fun unzipFile(
+    zippedFile:String,
+    unzipDirname: String
+): Pair<Boolean, String?> {
+    var zippedBytes: Long = -1
+    var unZippedBytes: Long = 0
+    val buffer = ByteArray(0x400)
+    try {
+        val f = File(zippedFile)
+        if (!f.exists()) throw RuntimeException(
+            "Zip in file " + zippedFile
+                    + " doesn't exist."
+        )
+        val unzipDir = File(HOME, unzipDirname)
+        if (!unzipDir.exists()) {
+            if (!unzipDir.mkdir()) {
+                return false to "Failed to create unzipDir:$unzipDir"
+            }
+        }
+        else if (!unzipDir.isDirectory) {
+            return false to """unzip to directory:$unzipDir: FAILED
+                $unzipDir exists and is not a directory.""".trimIndent()
+        }
+        zippedBytes = f.length()
+        val fileIn = FileInputStream(zippedFile)
+        val zipIn = ZipInputStream(BufferedInputStream(fileIn))
+        var ze: ZipEntry
+        while (zipIn.nextEntry.also { ze = it } != null) {
+            val zippedFileName = ze.name
+            if (ze.isDirectory) {
+                val newDir = File(unzipDirname + zippedFileName)
+                if (!newDir.mkdirs())
+                    return(false to "mkdirs $newDir FAILED")
+                continue
+            }
+            val zipOut = FileOutputStream(unzipDirname + zippedFileName)
+            var count: Int
+            while (zipIn.read(buffer).also { count = it } > 0) {
+                zipOut.write(buffer, 0, count)
+                unZippedBytes += count.toLong()
+            }
+            zipOut.close()
+            zipIn.closeEntry()
+        }
+        zipIn.close()
+    }
+    catch (e: Exception) {
+        return false to """
+                Error unzipping $zippedFile.
+                error = "${e.message}"
+                """.trimIndent()
+    }
+    return true to """Successfully unziped $zippedFile to directory
+        unzipped length:$zippedBytes, bytes unzipped:$unZippedBytes
+        """.trimIndent()
+}
+
+fun Application.gunzip (
+    zippedFile: String,
+    unZippedFile: String
+): Pair<Boolean, String?> {
+    var zippedBytes: Long
+    var unZippedBytes: Long = 0
+
+    val buffer = ByteArray(0x400)
+    try {
+        val f = File(zippedFile)
+        if (!f.exists())
+            return false to "Zip in file $zippedFile doesn't exist."
+        zippedBytes = f.length()
+        val gzipIn = GZIPInputStream(FileInputStream(zippedFile))
+        val gzipOut = FileOutputStream(unZippedFile)
+        var count: Int
+        while (gzipIn.read(buffer).also { count = it } > 0) {
+            gzipOut.write(buffer, 0, count)
+            unZippedBytes += count.toLong()
+        }
+        gzipOut.close()
+    }
+    catch (e: Exception) {
+        return false to """
+                Error unzipping $zippedFile.
+                error = "${e.message}"
+                """.trimIndent()
+    }
+    return true to """file $zippedFile unzipped to ${unZippedFile}:
+        $zippedBytes bytes tp $unZippedBytes""".trimIndent()
+}
+

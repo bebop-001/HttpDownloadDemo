@@ -69,7 +69,6 @@ class MainActivity : AppCompatActivity() {
                 val sourceUrl = downloadUrl.text.toString()
                 val destFile = destinationFilename.text.toString()
                 Log.d(TAG, "onResume")
-                NetworkMonitor.getInstance(application).start()
                 GlobalScope.launch {
                     withContext(Dispatchers.Main){startDownload.isEnabled = false}
                     var copyFileResult = application.isUrlReachable(sourceUrl)
@@ -119,13 +118,5 @@ class MainActivity : AppCompatActivity() {
             }
         )
         startDownload.isEnabled = downloadUrl.text.isNotEmpty()
-    }
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause")
-        try { NetworkMonitor.getInstance(application).stop() }
-        catch (e:Exception) {
-            Log.e(TAG, "onPause:Exception:${e.message}")
-        }
     }
 }

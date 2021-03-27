@@ -21,6 +21,7 @@
             stateAlwaysHidden: at start, no view has a focus.
     -->
     <application
+        android:name=".HttpDownloadDemo"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
