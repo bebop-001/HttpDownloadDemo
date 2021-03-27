@@ -1,20 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.kana_tutor.httpdownloaddemo">
-
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- for NetworkMonitor. -->
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+        android:usesCleartextTraffic="true":  After Android 8,
+            only https traffic is allowed unless this is set true.
+        tools:targetApi="m": Indicates that Lint should treat
+            this type as targeting a given API level,
+            no matter what the project target is
+        android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            see: ttps://www.youtube.com/watch?v=_mGDMVRO3iE
+                and https://developer.android.com/
+                training/keyboard-input/visibility
+            adjustResize: if keyboard obscures a view, pan as
+                necessary to allow the view to show.
+            stateAlwaysHidden: at start, no view has a focus.
+    -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.HttpDownloadDemo">
+        android:theme="@style/Theme.HttpDownloadDemo"
+        tools:targetApi="m">
         <activity android:name=".MainActivity"
             android:focusableInTouchMode="true"
-            android:windowSoftInputMode="stateAlwaysHidden"  >
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"  >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
