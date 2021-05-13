@@ -153,61 +153,53 @@ fun Application.copyFromAssetsToLocalFile(
     return true to "wrote $destSize bytes."
 }
 
-fun unzipFile(
-    zippedFile:String,
-    unzipDirname: String
-): Pair<Boolean, String?> {
-    var zippedBytes: Long = -1
-    var unZippedBytes: Long = 0
-    val buffer = ByteArray(0x400)
-    try {
-        val f = File(zippedFile)
-        if (!f.exists()) throw RuntimeException(
-            "Zip in file " + zippedFile
-                    + " doesn't exist."
-        )
-        val unzipDir = File(HOME, unzipDirname)
-        if (!unzipDir.exists()) {
-            if (!unzipDir.mkdir()) {
-                return false to "Failed to create unzipDir:$unzipDir"
-            }
+@Suppress("UsePropertyAccessSyntax", "unused")
+// using ZipInputStream:getNextEntry instead of ZipInputStream:nextEntry.
+// behaviour is different.  getNextEntry returns null if next entry is null
+// where as nextEntry throws an exception when null.
+fun Application.unzipFile(inStream:InputStream, unzipDir:String) : Long {
+    fun mkdirs(
+        root: File, dirName: String
+    ) : File {
+        val dirs = dirName.split("/+".toRegex()).toMutableList()
+        var next:File = root
+        while(dirs.isNotEmpty()) {
+            next = File(next, dirs.removeAt(0))
+            if (!next.exists() && !next.mkdir())
+                throw java.lang.RuntimeException(
+                    """$TAG: directory doesn't and mkdir FAILED:$next""")
         }
-        else if (!unzipDir.isDirectory) {
-            return false to """unzip to directory:$unzipDir: FAILED
-                $unzipDir exists and is not a directory.""".trimIndent()
+        return next
+    }
+
+    val buffer = ByteArray(BUFFER_SIZE)
+    var unzippedBytes = 0L
+    val zipStream = ZipInputStream(BufferedInputStream(inStream))
+    val unzipRoot = mkdirs(filesDir, unzipDir)
+    var ze:ZipEntry? = zipStream.getNextEntry()
+    while (ze != null) {
+        val zippedFileName = ze.name
+        val (_, dirName, fileName) = "^(?:(.*)/)*(?:([^/]+))*$".toRegex()
+            .find(zippedFileName)!!.groupValues
+        Log.d(TAG, "values:$unzipRoot/$dirName, $fileName")
+        var destDir = unzipRoot
+        if (dirName.isNotEmpty()) {
+            destDir = mkdirs(unzipRoot, dirName)
         }
-        zippedBytes = f.length()
-        val fileIn = FileInputStream(zippedFile)
-        val zipIn = ZipInputStream(BufferedInputStream(fileIn))
-        var ze: ZipEntry
-        while (zipIn.nextEntry.also { ze = it } != null) {
-            val zippedFileName = ze.name
-            if (ze.isDirectory) {
-                val newDir = File(unzipDirname + zippedFileName)
-                if (!newDir.mkdirs())
-                    return(false to "mkdirs $newDir FAILED")
-                continue
-            }
-            val zipOut = FileOutputStream(unzipDirname + zippedFileName)
+        if (fileName.isNotEmpty()) {
+            val zipOut = FileOutputStream("$destDir/$fileName")
             var count: Int
-            while (zipIn.read(buffer).also { count = it } > 0) {
+            while (zipStream.read(buffer).also { count = it } > 0) {
                 zipOut.write(buffer, 0, count)
-                unZippedBytes += count.toLong()
+                unzippedBytes += count.toLong()
             }
             zipOut.close()
-            zipIn.closeEntry()
         }
-        zipIn.close()
+        zipStream.closeEntry()
+        ze = zipStream.getNextEntry()
     }
-    catch (e: Exception) {
-        return false to """
-                Error unzipping $zippedFile.
-                error = "${e.message}"
-                """.trimIndent()
-    }
-    return true to """Successfully unziped $zippedFile to directory
-        unzipped length:$zippedBytes, bytes unzipped:$unZippedBytes
-        """.trimIndent()
+    zipStream.close()
+    return unzippedBytes
 }
 
 fun Application.gunzip (
